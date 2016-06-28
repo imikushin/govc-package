@@ -1,0 +1,30 @@
+#!/bin/bash
+set -e -x
+
+: ${GIT:=https://github.com/vmware/govmomi.git}
+: ${TAG:=v0.2.0}
+
+cd $(dirname $0)/..
+
+BASE=$(pwd)
+
+export GOPATH=${BASE}/build
+export PATH=${GOPATH}/bin:$PATH
+
+mkdir -p ${GOPATH}/src/github.com/vmware
+cd ${GOPATH}/src/github.com/vmware
+
+if [ ! -e govc ]; then
+    git clone $GIT
+fi
+
+cd govmomi
+git checkout $TAG
+
+cd govc
+go get .
+${BASE}/build.sh
+gzip -f govc_*
+
+mkdir -p ${BASE}/dist/artifacts
+cp govc_*.gz ${BASE}/dist/artifacts/
